@@ -5,8 +5,11 @@
 - Add tag role with value frontend
 - Connect to the instance
 - Run r10k
-$ sudo -E r10k deploy environment --puppetfile -c /etc/puppet/r10k.yaml
+
+`$ sudo -E r10k deploy environment --puppetfile -c /etc/puppet/r10k.yaml`
+
 - Run puppet apply
-$ sudo puppet apply -d -v /etc/puppet/environments/production/site.pp
+
+`$ sudo puppet apply -d -v /etc/puppet/environments/production/site.pp`
 
 make sure the name test.example.com exists or change it
