@@ -1,0 +1,78 @@
+{
+  "variables": {
+    "aws_region": "us-east-1",
+    "aws_source_ami": "ami-80861296",
+    "aws_instance_type": "t2.micro",
+    "aws_ami_name": "puppet-r10k",
+    "ssh_username": "ubuntu"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "communicator": "ssh",
+    "region": "{{user `aws_region`}}",
+    "source_ami": "{{user `aws_source_ami`}}",
+    "instance_type": "{{user `aws_instance_type`}}",
+    "ssh_username": "{{user `ssh_username`}}",
+    "ami_name": "{{user `aws_ami_name`}}-{{timestamp}}"
+  }],
+  "provisioners": [{
+    "type": "file",
+    "source": "./files/rc.local",
+    "destination": "/tmp/rc.local"
+  },
+  {
+    "type": "file",
+    "source": "./files/init.pp",
+    "destination": "/tmp/init.pp"
+  },
+  {
+    "type": "file",
+    "source": "./files/hiera.yaml",
+    "destination": "/tmp/hiera.yaml"
+  },
+  {
+    "type": "file",
+    "source": "./files/puppet.conf",
+    "destination": "/tmp/puppet.conf"
+  },
+  {
+    "type": "file",
+    "source": "./files/r10k.yaml",
+    "destination": "/tmp/r10k.yaml"
+  },
+  {
+    "type": "shell",
+    "inline": [
+      "# wait for any apt-get command to finish",
+      "sleep 30",
+
+      "# perform OS update",
+      "sudo apt-get update",
+
+      "# install packages",
+      "sudo apt-get install -y sysfsutils puppet r10k nscd awscli",
+
+      "# manage java",
+      "sudo add-apt-repository ppa:webupd8team/java",
+      "sudo apt-get update -y",
+      "echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections",
+      "sudo apt-get install -y oracle-java8-set-default",
+
+      "# copy rc.local provisioned",
+      "sudo cp -v /tmp/rc.local /etc/rc.local",
+
+      "# copy init.pp provisioned",
+      "sudo cp -v /tmp/init.pp /etc/puppet/manifests/",
+
+      "# copy hiera.yaml provisioned",
+      "sudo cp -v /tmp/hiera.yaml /etc/puppet/",
+
+      "# copy puppet.conf provisioned (we will need a template in the futer to set environment)",
+      "sudo cp -v /tmp/puppet.conf /etc/puppet/",
+
+      "# copy r10k.yaml provisioned",
+      "sudo cp -v /tmp/r10k.yaml /etc/puppet/"
+    ]
+  }]
+}
+
